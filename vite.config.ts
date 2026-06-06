@@ -31,14 +31,11 @@ export default defineConfig(() => {
     plugins: [
       react(), 
       tailwindcss(),
-      // ✅ FIX: Custom compiler plugin that strips runtime @import injections 
-      // directly out of compiled JavaScript vendor chunks before production deployment.
       {
         name: 'strip-runtime-css-imports',
         enforce: 'post',
         transform(code, id) {
           if (id.endsWith('.js') || id.endsWith('.ts') || id.endsWith('.tsx') || id.includes('node_modules')) {
-            // Replaces illegal dynamic CSS insertRule("@import ...") calls with safe empty strings
             return {
               code: code.replace(/insertRule\s*\(\s*['"`]\s*@import[\s\S]*?['"`]\s*\)/g, 'insertRule("")'),
               map: null
@@ -60,6 +57,4 @@ export default defineConfig(() => {
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };
-});
-
 });
