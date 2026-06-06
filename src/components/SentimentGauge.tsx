@@ -1,12 +1,29 @@
 import React from "react";
 import { motion } from "motion/react";
 
+// interface SentimentGaugeProps {
+//   score: number | null;
+// }
+
+// export function SentimentGauge({ score }: SentimentGaugeProps) {
+//   if (score === null || score === undefined) {
+//     return (
+//       <div className="flex flex-col items-center justify-center p-4 bg-gray-50/50 rounded-xl border border-gray-100 h-full min-h-[180px]" id="sentiment-gauge-null">
+//         <span className="text-gray-400 text-sm font-medium">Sentiment N/A</span>
+//         <span className="text-gray-300 text-xs mt-1 text-center">Brand was not mentioned</span>
+//       </div>
+//     );
+//   }
+
 interface SentimentGaugeProps {
   score: number | null;
+  /** Pass the visibility state or boolean from your report */
+  isBrandPresent?: boolean; 
 }
 
-export function SentimentGauge({ score }: SentimentGaugeProps) {
-  if (score === null || score === undefined) {
+export function SentimentGauge({ score, isBrandPresent = true }: SentimentGaugeProps) {
+  // Force the fallback UI if explicitly absent, regardless of what the score number says
+  if (score === null || score === undefined || !isBrandPresent) {
     return (
       <div className="flex flex-col items-center justify-center p-4 bg-gray-50/50 rounded-xl border border-gray-100 h-full min-h-[180px]" id="sentiment-gauge-null">
         <span className="text-gray-400 text-sm font-medium">Sentiment N/A</span>
@@ -14,6 +31,9 @@ export function SentimentGauge({ score }: SentimentGaugeProps) {
       </div>
     );
   }
+
+  // ... rest of your active gauge logic remains completely untouched
+
 
   // Map score from [-1.0, 1.0] to [0, 180] degrees for gauge needle rotation
   const percentage = (score + 1) / 2; // [0, 1] Range
