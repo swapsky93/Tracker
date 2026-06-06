@@ -28,29 +28,29 @@ import { defineConfig } from 'vite';
 
 export default defineConfig(() => {
   return {
-    plugins: [react(), tailwindcss()],
+    plugins: [
+      react(), 
+      tailwindcss(),
+      // ✅ FIX: Custom compiler plugin that strips runtime @import injections 
+      // directly out of compiled JavaScript vendor chunks before production deployment.
+      {
+        name: 'strip-runtime-css-imports',
+        enforce: 'post',
+        transform(code, id) {
+          if (id.endsWith('.js') || id.endsWith('.ts') || id.endsWith('.tsx') || id.includes('node_modules')) {
+            // Replaces illegal dynamic CSS insertRule("@import ...") calls with safe empty strings
+            return {
+              code: code.replace(/insertRule\s*\(\s*['"`]\s*@import[\s\S]*?['"`]\s*\)/g, 'insertRule("")'),
+              map: null
+            };
+          }
+        }
+      }
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
-    },
-    // ✅ FIX: Force the built-in PostCSS pipeline to flatten all third-party 
-    // CSS module imports, neutralizing constructable stylesheet errors.
-    css: {
-      postcss: {
-        plugins: [
-          {
-            postcssPlugin: 'grouped-import-suppressor',
-            AtRule: {
-              import: (atRule) => {
-                // If an internal vendor library chunk contains an runtime @import rule,
-                // this dynamically flattens it out during compilation on Render.
-                atRule.remove();
-              }
-            }
-          }
-        ]
-      }
     },
     server: {
       // HMR is disabled in AI Studio via DISABLE_HMR env var.
@@ -60,4 +60,6 @@ export default defineConfig(() => {
       watch: process.env.DISABLE_HMR === 'true' ? null : {},
     },
   };
+});
+
 });
