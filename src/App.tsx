@@ -1124,14 +1124,72 @@ const DEFAULT_RECORDS: GeoRecord[] = [
 //   };
 // }
 
+// function adaptAuditDataToUI(auditData: RawAuditData): UIAuditData {
+//   // ✅ FIX 1: Safely read currentRecord even if auditData is undefined on initial mount
+//   const record = auditData?.currentRecord;
+
+//   const brandVisible = Boolean(record?.result?.Brand_MenToned);
+//   const sentiment = record?.result?.SenTment ?? null;
+//   const authority = record?.result?.Contextual_Authority ?? null;
+//   const competitors = record?.result?.CompeTtors_MenToned ?? [];
+//   const recommendationPriority =
+//     record?.result?.RecommendaTon_Priority ?? "Unknown";
+//   const citationDetected = Boolean(record?.result?.CitaTon_Detected);
+//   const framingSummary =
+//     record?.result?.Summary_of_Framing ?? "No framing summary available.";
+
+//   const hasContradictionWarning =
+//     (brandVisible && sentiment !== null && sentiment < 0) ||
+//     (!brandVisible && sentiment !== null && sentiment > 0);
+
+//   let warningMessage = "";
+//   if (brandVisible && sentiment !== null && sentiment < 0) {
+//     warningMessage =
+//       "This brand is visible, but the framing sentiment is negative. Presence exists, though the recommendation context may still be risky.";
+//   } else if (!brandVisible && sentiment !== null && sentiment > 0) {
+//     warningMessage =
+//       "The response appears positive overall, but the target brand is not actually visible. This suggests favorable category framing without direct brand capture.";
+//   }
+
+//   // ✅ FIX 2: Safely read fields from auditData.metrics using optional chaining (?.) 
+//   // so it defaults cleanly to your fallback values if the data hasn't loaded yet.
+//   return {
+//     globalMetrics: {
+//       totalAudits: auditData?.metrics?.total ?? 0,
+//       shareOfVoiceValue: auditData?.metrics?.menTonRate ?? 0,
+//       shareOfVoiceText: `${auditData?.metrics?.menTonRate ?? 0}%`,
+//       historicalSentiment: Number(auditData?.metrics?.avgSenTment ?? 0).toFixed(2),
+//       historicalAuthority: Number(auditData?.metrics?.avgAuthority ?? 0).toFixed(1),
+//       topCompetitors: auditData?.metrics?.topCompeTtors ?? [],
+//     },
+//     liveMetrics: {
+//       brandVisible,
+//       presenceStatus: brandVisible ? "Brand Visible" : "Brand Absent",
+//       gaugeScore: sentiment,
+//       authorityScore: authority,
+//       recommendationPriority,
+//       competitors,
+//       citationDetected,
+//       framingSummary,
+//       hasContradictionWarning,
+//       warningMessage,
+//     },
+//   };
+// }
+
 function adaptAuditDataToUI(auditData: RawAuditData): UIAuditData {
-  // ✅ FIX 1: Safely read currentRecord even if auditData is undefined on initial mount
+  // 1️⃣ Safe element extraction check
   const record = auditData?.currentRecord;
 
   const brandVisible = Boolean(record?.result?.Brand_MenToned);
   const sentiment = record?.result?.SenTment ?? null;
   const authority = record?.result?.Contextual_Authority ?? null;
-  const competitors = record?.result?.CompeTtors_MenToned ?? [];
+  
+  // Enforce a strict fallback to a valid array literal
+  const competitors = Array.isArray(record?.result?.CompeTtors_MenToned) 
+    ? record.result.CompeTtors_MenToned 
+    : [];
+
   const recommendationPriority =
     record?.result?.RecommendaTon_Priority ?? "Unknown";
   const citationDetected = Boolean(record?.result?.CitaTon_Detected);
@@ -1151,8 +1209,11 @@ function adaptAuditDataToUI(auditData: RawAuditData): UIAuditData {
       "The response appears positive overall, but the target brand is not actually visible. This suggests favorable category framing without direct brand capture.";
   }
 
-  // ✅ FIX 2: Safely read fields from auditData.metrics using optional chaining (?.) 
-  // so it defaults cleanly to your fallback values if the data hasn't loaded yet.
+  // 2️⃣ Enforce a strict fallback to a valid array literal for metrics
+  const topCompetitors = Array.isArray(auditData?.metrics?.topCompeTtors)
+    ? auditData.metrics.topCompeTtors
+    : [];
+
   return {
     globalMetrics: {
       totalAudits: auditData?.metrics?.total ?? 0,
@@ -1160,7 +1221,8 @@ function adaptAuditDataToUI(auditData: RawAuditData): UIAuditData {
       shareOfVoiceText: `${auditData?.metrics?.menTonRate ?? 0}%`,
       historicalSentiment: Number(auditData?.metrics?.avgSenTment ?? 0).toFixed(2),
       historicalAuthority: Number(auditData?.metrics?.avgAuthority ?? 0).toFixed(1),
-      topCompetitors: auditData?.metrics?.topCompeTtors ?? [],
+      // ✅ Explicitly pass guaranteed array instance
+      topCompetitors: topCompetitors,
     },
     liveMetrics: {
       brandVisible,
@@ -1168,7 +1230,8 @@ function adaptAuditDataToUI(auditData: RawAuditData): UIAuditData {
       gaugeScore: sentiment,
       authorityScore: authority,
       recommendationPriority,
-      competitors,
+      // ✅ Explicitly pass guaranteed array instance
+      competitors: competitors,
       citationDetected,
       framingSummary,
       hasContradictionWarning,
@@ -1176,6 +1239,7 @@ function adaptAuditDataToUI(auditData: RawAuditData): UIAuditData {
     },
   };
 }
+
 
 function formatRelativeTime(iso: string) {
   const timestamp = new Date(iso).getTime();
