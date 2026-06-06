@@ -1219,9 +1219,11 @@ function adaptAuditDataToUI(auditData: RawAuditData): UIAuditData {
       totalAudits: auditData?.metrics?.total ?? 0,
       shareOfVoiceValue: auditData?.metrics?.menTonRate ?? 0,
       shareOfVoiceText: `${auditData?.metrics?.menTonRate ?? 0}%`,
-      historicalSentiment: Number(auditData?.metrics?.avgSenTment ?? 0).toFixed(2),
-      historicalAuthority: Number(auditData?.metrics?.avgAuthority ?? 0).toFixed(1),
-      // ✅ Explicitly pass guaranteed array instance
+      // ✅ FIX: Keep these as Numbers instead of calling .toFixed() strings!
+      // This protects charting utilities and component metrics arrays from crashing.
+      historicalSentiment: Number(auditData?.metrics?.avgSenTment ?? 0),
+      historicalAuthority: Number(auditData?.metrics?.avgAuthority ?? 0),
+      // Explicitly pass guaranteed array instance
       topCompetitors: topCompetitors,
     },
     liveMetrics: {
@@ -1230,7 +1232,7 @@ function adaptAuditDataToUI(auditData: RawAuditData): UIAuditData {
       gaugeScore: sentiment,
       authorityScore: authority,
       recommendationPriority,
-      // ✅ Explicitly pass guaranteed array instance
+      // Explicitly pass guaranteed array instance
       competitors: competitors,
       citationDetected,
       framingSummary,
@@ -1239,6 +1241,7 @@ function adaptAuditDataToUI(auditData: RawAuditData): UIAuditData {
     },
   };
 }
+
 
 
 function formatRelativeTime(iso: string) {
