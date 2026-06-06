@@ -85,33 +85,74 @@ Do NOT say you are simulating — just write the response directly.`,
 
 // ── NEW: Dynamically extract competitors using NVIDIA NIM ─────────────────────
 // Replaces hardcoded competitor list — now dynamically reads from response text
-async function extractCompetitors(brand: string, responseText: string): Promise<string[]> {
+// async function extractCompetitors(brand: string, responseText: string): Promise<string[]> {
+//   try {
+//     const nvidia = getNvidiaClient();
+
+//     const completion = await nvidia.chat.completions.create({
+//       model: "meta/llama-3.3-70b-instruct",
+//       messages: [
+//         {
+//           role: "system",
+//           content: `You are a brand analyst. Extract all competitor brand names mentioned in the given text.
+// Return ONLY a valid JSON array of strings like: ["Brand1", "Brand2", "Brand3"]
+// No markdown, no explanation, no code blocks. Just the raw JSON array.`,
+//         },
+//         {
+//           role: "user",
+//           content: `Target brand to EXCLUDE: "${brand}"
+          
+// Text to analyze:
+// """
+// ${responseText}
+// """
+
+// Extract all competitor/other brand names mentioned (exclude "${brand}" itself):`,
+//         },
+//       ],
+//       max_tokens: 200,
+//       temperature: 0.1,
+//     });
+
+async function extractCompetitors(brand: string, responseText: string, query: string): Promise<string[]> {
   try {
     const nvidia = getNvidiaClient();
-
     const completion = await nvidia.chat.completions.create({
       model: "meta/llama-3.3-70b-instruct",
       messages: [
         {
           role: "system",
-          content: `You are a brand analyst. Extract all competitor brand names mentioned in the given text.
-Return ONLY a valid JSON array of strings like: ["Brand1", "Brand2", "Brand3"]
-No markdown, no explanation, no code blocks. Just the raw JSON array.`,
+          content: `You are a strict brand analyst. Extract ONLY competitor brand names that are:
+1. Directly mentioned in the provided text
+2. In the SAME industry/category as the target brand
+3. Actually relevant to the user query
+
+Return ONLY a valid JSON array like: ["Brand1", "Brand2"]
+If no valid competitors found, return: []
+No markdown, no explanation. Raw JSON array only.`,
         },
         {
           role: "user",
-          content: `Target brand to EXCLUDE: "${brand}"
-          
-Text to analyze:
+          content: `Target brand: "${brand}"
+User query: "${query}"
+
+Text to analyze (ONLY extract brands mentioned IN THIS TEXT, same industry as "${brand}"):
 """
 ${responseText}
 """
 
-Extract all competitor/other brand names mentioned (exclude "${brand}" itself):`,
+Rules:
+- ONLY brands explicitly mentioned in the text above
+- ONLY brands in the same category as "${brand}"
+- NEVER add brands not present in the text
+- NEVER include "${brand}" itself
+- If unsure about relevance, exclude it
+
+Return JSON array:`,
         },
       ],
       max_tokens: 200,
-      temperature: 0.1,
+      temperature: 0.0,
     });
 
     const raw = completion.choices[0]?.message?.content?.trim() ?? "[]";
@@ -145,7 +186,8 @@ app.post("/api/analyze", async (req, res) => {
     }
 
     // ── STEP 2: Extract competitors dynamically via NVIDIA NIM ────────────────
-    const dynamicCompetitors = await extractCompetitors(brand, resolvedAiResponse);
+    // const dynamicCompetitors = await extractCompetitors(brand, resolvedAiResponse); //orig
+    const dynamicCompetitors = await extractCompetitors(brand, resolvedAiResponse, query);
     console.log(`[Competitors] Detected: ${dynamicCompetitors.join(", ")}`);
 
     // ── STEP 3: Run GEO analysis via Gemini (your existing logic) ─────────────
