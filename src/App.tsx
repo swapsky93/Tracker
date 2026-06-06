@@ -285,18 +285,34 @@ export default function App() {
       ? Number((authorityRecords.reduce((acc, r) => acc + (r.result.Contextual_Authority || 0), 0) / authorityRecords.length).toFixed(1))
       : 0;
 
-    const competitorMap: Record<string, number> = {};
-    records.forEach(r => {
-      r.result.Competitors_Mentioned.forEach(comp => {
-        const norm = comp.trim();
-        if (norm) competitorMap[norm] = (competitorMap[norm] || 0) + 1;
-      });
-    });
+    // const competitorMap: Record<string, number> = {};
+    // records.forEach(r => {
+    //   r.result.Competitors_Mentioned.forEach(comp => {
+    //     const norm = comp.trim();
+    //     if (norm) competitorMap[norm] = (competitorMap[norm] || 0) + 1;
+    //   });
+    // });
 
-    const topCompetitors = Object.entries(competitorMap)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+    // const topCompetitors = Object.entries(competitorMap)
+    //   .map(([name, count]) => ({ name, count }))
+    //   .sort((a, b) => b.count - a.count)
+    //   .slice(0, 5);
+
+    const competitorMap: Record<string, number> = {};
+
+// Only use competitors from the CURRENT record, not all records
+const sourceRecords = currentRecord ? [currentRecord] : records.slice(0, 1);
+sourceRecords.forEach(r => {
+  r.result.Competitors_Mentioned.forEach(comp => {
+    const norm = comp.trim();
+    if (norm) competitorMap[norm] = (competitorMap[norm] || 0) + 1;
+  });
+});
+
+const topCompetitors = Object.entries(competitorMap)
+  .map(([name, count]) => ({ name, count }))
+  .sort((a, b) => b.count - a.count)
+  .slice(0, 5);
 
     return { total, mentionRate, avgSentiment, avgAuthority, topCompetitors };
   }, [records]);
