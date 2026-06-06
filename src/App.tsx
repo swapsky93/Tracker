@@ -1423,20 +1423,54 @@ export default function App() {
   //   return adaptAuditDataToUI(auditData);
   // }, [auditData]);
 
-   const auditData = useMemo<RawAuditData>(() => {
-        return {
-    // Pulling individual values out of metrics and currentRecord safely
-          totalAudits: metrics?.totalAudits ?? 0,
-          historicalMentionRate: metrics?.historicalMentionRate ?? 0,
-          globalGeoSentiment: metrics?.globalGeoSentiment ?? 0,
-          enginePresence: currentRecord?.enginePresence ?? "Brand Absent",
-          liveResponseSentiment: currentRecord?.liveResponseSentiment ?? 0,
-        };
-      }, [metrics, currentRecord]);
+   // const auditData = useMemo<RawAuditData>(() => {
+   //      return {
+   //  // Pulling individual values out of metrics and currentRecord safely
+   //        totalAudits: metrics?.totalAudits ?? 0,
+   //        historicalMentionRate: metrics?.historicalMentionRate ?? 0,
+   //        globalGeoSentiment: metrics?.globalGeoSentiment ?? 0,
+   //        enginePresence: currentRecord?.enginePresence ?? "Brand Absent",
+   //        liveResponseSentiment: currentRecord?.liveResponseSentiment ?? 0,
+   //      };
+   //    }, [metrics, currentRecord]);
 
-      const { globalMetrics, liveMetrics } = useMemo(() => {
-        return adaptAuditDataToUI(auditData);
-      }, [auditData]);
+   //    const { globalMetrics, liveMetrics } = useMemo(() => {
+   //      return adaptAuditDataToUI(auditData);
+   //    }, [auditData]);
+      const auditData = useMemo<RawAuditData>(() => {
+  // 💡 HELPER: Inspects your metrics object safely to find your total value
+  const extractedTotal = 
+    metrics?.totalAudits ?? 
+    metrics?.total ?? 
+    (metrics as any)?.total_audits ?? 
+    0;
+
+  const extractedMentionRate = 
+    metrics?.historicalMentionRate ?? 
+    (metrics as any)?.historical_mention_rate ?? 
+    0;
+
+  const extractedGlobalSentiment = 
+    metrics?.globalGeoSentiment ?? 
+    (metrics as any)?.global_geo_sentiment ?? 
+    0;
+
+  return {
+    // Safely inject the extracted values
+    totalAudits: extractedTotal,
+    historicalMentionRate: extractedMentionRate,
+    globalGeoSentiment: extractedGlobalSentiment,
+    
+    // Safely extract from currentRecord
+    enginePresence: currentRecord?.enginePresence ?? "Brand Absent",
+    liveResponseSentiment: currentRecord?.liveResponseSentiment ?? 0,
+  };
+}, [metrics, currentRecord]);
+
+const { globalMetrics, liveMetrics } = useMemo(() => {
+  return adaptAuditDataToUI(auditData);
+}, [auditData]);
+
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col text-gray-800" id="geo-app-root">
