@@ -56,7 +56,7 @@ app.post("/api/analyze", async (req, res) => {
     Use the Google Search tool provided to ground your analysis if necessary.`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-1.5-flash",
+      model: "gemini-2.5-flash",
       contents: promptObj,
       config: {
         tools: [{ googleSearch: {} }],
