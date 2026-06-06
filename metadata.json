@@ -1,0 +1,6 @@
+{
+  "name": "GEO Search Analyzer",
+  "description": "An expert GEO (Generative Engine Optimization) tool to analyze brand mentions, sentiment, contextual authority, competitor share, and framing within AI-generated search responses.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
