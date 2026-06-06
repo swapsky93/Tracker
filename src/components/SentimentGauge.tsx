@@ -1,29 +1,36 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "motion/react";
-
-// interface SentimentGaugeProps {
-//   score: number | null;
-// }
-
-// export function SentimentGauge({ score }: SentimentGaugeProps) {
-//   if (score === null || score === undefined) {
-//     return (
-//       <div className="flex flex-col items-center justify-center p-4 bg-gray-50/50 rounded-xl border border-gray-100 h-full min-h-[180px]" id="sentiment-gauge-null">
-//         <span className="text-gray-400 text-sm font-medium">Sentiment N/A</span>
-//         <span className="text-gray-300 text-xs mt-1 text-center">Brand was not mentioned</span>
-//       </div>
-//     );
-//   }
 
 interface SentimentGaugeProps {
   score: number | null;
-  /** Pass the visibility state or boolean from your report */
-  isBrandPresent?: boolean; 
 }
 
-export function SentimentGauge({ score, isBrandPresent = true }: SentimentGaugeProps) {
-  // Force the fallback UI if explicitly absent, regardless of what the score number says
-  if (score === null || score === undefined || !isBrandPresent) {
+export function SentimentGauge({ score }: SentimentGaugeProps) {
+  const [isBrandAbsent, setIsBrandAbsent] = useState(false);
+
+  useEffect(() => {
+    // Looks for the "BRAND ABSENT" label anywhere in your app's DOM tree
+    const checkDomForAbsence = () => {
+      const pageText = document.body.innerText || "";
+      if (pageText.includes("BRAND ABSENT") || pageText.includes("Brand Absent")) {
+        setIsBrandAbsent(true);
+      } else {
+        setIsBrandAbsent(false);
+      }
+    };
+
+    // Run immediately on mount
+    checkDomForAbsence();
+
+    // Optional: Watch for dynamic updates if the user switches brands without reloading
+    const observer = new MutationObserver(checkDomForAbsence);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Force Null state if explicitly absent in the DOM OR if score is missing
+  if (score === null || score === undefined || isBrandAbsent) {
     return (
       <div className="flex flex-col items-center justify-center p-4 bg-gray-50/50 rounded-xl border border-gray-100 h-full min-h-[180px]" id="sentiment-gauge-null">
         <span className="text-gray-400 text-sm font-medium">Sentiment N/A</span>
@@ -31,9 +38,6 @@ export function SentimentGauge({ score, isBrandPresent = true }: SentimentGaugeP
       </div>
     );
   }
-
-  // ... rest of your active gauge logic remains completely untouched
-
 
   // Map score from [-1.0, 1.0] to [0, 180] degrees for gauge needle rotation
   const percentage = (score + 1) / 2; // [0, 1] Range
