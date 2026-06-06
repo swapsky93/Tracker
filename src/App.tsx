@@ -1560,39 +1560,39 @@ export default function App() {
       const auditData = useMemo<RawAuditData>(() => {
   // Extract values using your flexible property helpers
         const extractedTotal = 
-    metrics?.totalAudits ?? 
-    metrics?.total ?? 
-    (metrics as any)?.total_audits ?? 
-    0;
+          metrics?.totalAudits ?? 
+          metrics?.total ?? 
+          (metrics as any)?.total_audits ?? 
+          0;
 
         const extractedMentionRate = 
-                metrics?.menTonRate ?? 
-    metrics?.historicalMentionRate ?? 
-    (metrics as any)?.historical_mention_rate ?? 
-    0;
+          metrics?.menTonRate ?? 
+          metrics?.historicalMentionRate ?? 
+          (metrics as any)?.historical_mention_rate ?? 
+          0;
 
-  const extractedGlobalSentiment = 
-    metrics?.avgSenTment ?? 
-    metrics?.globalGeoSentiment ?? 
-    (metrics as any)?.global_geo_sentiment ?? 
-    0;
+        const extractedGlobalSentiment = 
+          metrics?.avgSenTment ?? 
+          metrics?.globalGeoSentiment ?? 
+          (metrics as any)?.global_geo_sentiment ?? 
+          0;
 
-  const extractedAvgAuthority = 
-    metrics?.avgAuthority ?? 
-    0;
+        const extractedAvgAuthority = 
+          metrics?.avgAuthority ?? 
+          0;
 
-  const extractedTopCompetitors = 
-    Array.isArray(metrics?.topCompeTtors) ? metrics.topCompeTtors : [];
-
-  return {
+        const extractedTopCompetitors = 
+          Array.isArray(metrics?.topCompeTtors) ? metrics.topCompeTtors : [];
+      
+        return {
     // ✅ Re-nest the values under the 'metrics' key to match the function requirements
-    metrics: {
-      total: extractedTotal,
-      menTonRate: extractedMentionRate,
-      avgSenTment: extractedGlobalSentiment,
-      avgAuthority: extractedAvgAuthority,
-      topCompeTtors: extractedTopCompetitors,
-    },
+          metrics: {
+            total: extractedTotal,
+            menTonRate: extractedMentionRate,
+            avgSenTment: extractedGlobalSentiment,
+            avgAuthority: extractedAvgAuthority,
+            topCompeTtors: extractedTopCompetitors,
+          },
     // ✅ Ensure currentRecord structural shape matches your function properties
     currentRecord: currentRecord || null,
   };
