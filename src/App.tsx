@@ -1411,17 +1411,32 @@ export default function App() {
     };
   }, [records]);
 
-  const auditData = useMemo<RawAuditData>(() => {
-    return {
-      records,
-      currentRecord,
-      metrics,
-    };
-  }, [records, currentRecord, metrics]);
+  // const auditData = useMemo<RawAuditData>(() => {
+  //   return {
+  //     records,
+  //     currentRecord,
+  //     metrics,
+  //   };
+  // }, [records, currentRecord, metrics]);
 
-  const { globalMetrics, liveMetrics } = useMemo(() => {
-    return adaptAuditDataToUI(auditData);
-  }, [auditData]);
+  // const { globalMetrics, liveMetrics } = useMemo(() => {
+  //   return adaptAuditDataToUI(auditData);
+  // }, [auditData]);
+
+   const auditData = useMemo<RawAuditData>(() => {
+        return {
+    // Pulling individual values out of metrics and currentRecord safely
+          totalAudits: metrics?.totalAudits ?? 0,
+          historicalMentionRate: metrics?.historicalMentionRate ?? 0,
+          globalGeoSentiment: metrics?.globalGeoSentiment ?? 0,
+          enginePresence: currentRecord?.enginePresence ?? "Brand Absent",
+          liveResponseSentiment: currentRecord?.liveResponseSentiment ?? 0,
+        };
+      }, [metrics, currentRecord]);
+
+      const { globalMetrics, liveMetrics } = useMemo(() => {
+        return adaptAuditDataToUI(auditData);
+      }, [auditData]);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col text-gray-800" id="geo-app-root">
