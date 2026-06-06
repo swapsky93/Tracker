@@ -76,59 +76,95 @@ Generate an objective, highly informative Summary_of_Framing (exactly one senten
 
 Please output a JSON structure adhering strictly to the requested schema.`;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.5-flash",
-      contents: promptObj,
-      config: {
-        systemInstruction: "You are an objective expert GEO analyst. Be precise in analyzing mentions and sentiment. Adhere strictly to the requested schema.",
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          required: [
-            "Brand_Mentioned",
-            "Sentiment",
-            "Contextual_Authority",
-            "Competitors_Mentioned",
-            "Citation_Detected",
-            "Recommendation_Priority",
-            "Summary_of_Framing"
-          ],
-          properties: {
-            Brand_Mentioned: {
-              type: Type.BOOLEAN,
-              description: "Whether the brand is mentioned or referred to in the AI response."
-            },
-            Sentiment: {
-              type: Type.NUMBER,
-              description: "Scale from -1.0 (Highly Negative) to 1.0 (Highly Positive). Set to null if Brand_Mentioned is false."
-            },
-            Contextual_Authority: {
-              type: Type.INTEGER,
-              description: "1-5 scale. Set to null if Brand_Mentioned is false."
-            },
-            Competitors_Mentioned: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.STRING
-              },
-              description: "List of other brands or competing products mentioned in the same response."
-            },
-            Citation_Detected: {
-              type: Type.BOOLEAN,
-              description: "Whether a link, source link, or citation tag is detected for the brand."
-            },
-            Recommendation_Priority: {
-              type: Type.STRING,
-              description: "Where in the response was the brand positioned? E.g., 'First paragraph', 'In a list', 'Concluding recommendation', 'Not mentioned'."
-            },
-            Summary_of_Framing: {
-              type: Type.STRING,
-              description: "Exactly one short, objective sentence summarizing how the AI response frames the brand."
-            }
-          }
-        }
+    // const response = await ai.models.generateContent({
+    //   model: "gemini-3.5-flash",
+    //   contents: promptObj,
+    //   config: {
+    //     systemInstruction: "You are an objective expert GEO analyst. Be precise in analyzing mentions and sentiment. Adhere strictly to the requested schema.",
+    //     responseMimeType: "application/json",
+    //     responseSchema: {
+    //       type: Type.OBJECT,
+    //       required: [
+    //         "Brand_Mentioned",
+    //         "Sentiment",
+    //         "Contextual_Authority",
+    //         "Competitors_Mentioned",
+    //         "Citation_Detected",
+    //         "Recommendation_Priority",
+    //         "Summary_of_Framing"
+    //       ],
+    //       properties: {
+    //         Brand_Mentioned: {
+    //           type: Type.BOOLEAN,
+    //           description: "Whether the brand is mentioned or referred to in the AI response."
+    //         },
+    //         Sentiment: {
+    //           type: Type.NUMBER,
+    //           description: "Scale from -1.0 (Highly Negative) to 1.0 (Highly Positive). Set to null if Brand_Mentioned is false."
+    //         },
+    //         Contextual_Authority: {
+    //           type: Type.INTEGER,
+    //           description: "1-5 scale. Set to null if Brand_Mentioned is false."
+    //         },
+    //         Competitors_Mentioned: {
+    //           type: Type.ARRAY,
+    //           items: {
+    //             type: Type.STRING
+    //           },
+    //           description: "List of other brands or competing products mentioned in the same response."
+    //         },
+    //         Citation_Detected: {
+    //           type: Type.BOOLEAN,
+    //           description: "Whether a link, source link, or citation tag is detected for the brand."
+    //         },
+    //         Recommendation_Priority: {
+    //           type: Type.STRING,
+    //           description: "Where in the response was the brand positioned? E.g., 'First paragraph', 'In a list', 'Concluding recommendation', 'Not mentioned'."
+    //         },
+    //         Summary_of_Framing: {
+    //           type: Type.STRING,
+    //           description: "Exactly one short, objective sentence summarizing how the AI response frames the brand."
+    //         }
+    //       }
+    //     }
+    //   }
+    // });
+
+    // Replace your existing ai.models.generateContent block with this:
+const response = await ai.models.generateContent({
+  model: "gemini-3.5-flash",
+  contents: promptObj,
+  config: {
+    // 1. ADD THIS TOOL CONFIGURATION
+    tools: [{ googleSearch: {} }], 
+    
+    // 2. Keep your existing instructions
+    systemInstruction: "You are an objective expert GEO analyst. Use the Google Search tool to find live information about the query and the brand before analyzing.",
+    responseMimeType: "application/json",
+    responseSchema: {
+      type: Type.OBJECT,
+      required: [
+        "Brand_Mentioned",
+        "Sentiment",
+        "Contextual_Authority",
+        "Competitors_Mentioned",
+        "Citation_Detected",
+        "Recommendation_Priority",
+        "Summary_of_Framing"
+      ],
+      properties: {
+        // ... (Keep your existing properties exactly as they are)
+        Brand_Mentioned: { type: Type.BOOLEAN },
+        Sentiment: { type: Type.NUMBER },
+        Contextual_Authority: { type: Type.INTEGER },
+        Competitors_Mentioned: { type: Type.ARRAY, items: { type: Type.STRING } },
+        Citation_Detected: { type: Type.BOOLEAN },
+        Recommendation_Priority: { type: Type.STRING },
+        Summary_of_Framing: { type: Type.STRING }
       }
-    });
+    }
+  }
+});
 
     const textOutput = response.text;
     if (!textOutput) {
