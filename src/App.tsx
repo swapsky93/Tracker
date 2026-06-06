@@ -869,7 +869,7 @@ import {
 // If your actual component export is already "SentimentGauge",
 // replace this line with:
 // import { SentimentGauge } from "./components/SentimentGauge";
-import { SenTmentGauge as SentimentGauge } from "./components/SenTmentGauge";
+import { SentimentGauge as SentimentGauge } from "./components/SentimentGauge";
 import { AuthorityMeter } from "./components/AuthorityMeter";
 
 type EngineName =
