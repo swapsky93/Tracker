@@ -1,7 +1,133 @@
+// import express from "express";
+// import path from "path";
+// import { createServer as createViteServer } from "vite";
+// import { GoogleGenAI, Type } from "@google/genai";
+// import dotenv from "dotenv";
+
+// dotenv.config();
+
+// const app = express();
+// app.use(express.json({ limit: "5mb" }));
+
+// const PORT = 3000;
+
+// // Lazy initialization of Gemini API
+// let aiClient: GoogleGenAI | null = null;
+// function getGeminiClient(): GoogleGenAI {
+//   if (!aiClient) {
+//     const apiKey = process.env.GEMINI_API_KEY;
+//     if (!apiKey) {
+//       throw new Error("GEMINI_API_KEY environment variable is required.");
+//     }
+//     aiClient = new GoogleGenAI({
+//       apiKey,
+//       httpOptions: {
+//         headers: {
+//           'User-Agent': 'aistudio-build',
+//         }
+//       }
+//     });
+//   }
+//   return aiClient;
+// }
+
+// // API Routes
+// app.post("/api/analyze", async (req, res) => {
+//   try {
+//     const { brand, query, aiResponseText } = req.body;
+
+//     if (!brand || !query || !aiResponseText) {
+//       return res.status(400).json({ error: "Missing required fields: brand, query, or aiResponseText." });
+//     }
+
+//     const ai = getGeminiClient();
+
+//     const promptObj = `You are an expert Digital Intelligence Analyst specializing in Generative Engine Optimization (GEO). 
+//     Your task is to analyze the following AI-generated search response and evaluate the presence and positioning of a target brand.
+
+//     Target Brand: "${brand.trim()}"
+//     Original User Query: "${query.trim()}"
+//     AI-Generated Response Text:
+//     """
+//     ${aiResponseText.trim()}
+//     """
+
+//     Instructions: Analyze visibility, sentiment, authority, competitors, and framing. 
+//     Use the Google Search tool provided to ground your analysis if necessary.`;
+
+//     const response = await ai.models.generateContent({
+//       model: "gemini-2.5-flash",
+//       contents: promptObj,
+//       config: {
+//         tools: [{ googleSearch: {} }],
+//         systemInstruction: "You are an objective expert GEO analyst. Adhere strictly to the JSON schema provided.",
+//         responseMimeType: "application/json",
+//         responseSchema: {
+//           type: Type.OBJECT,
+//           required: [
+//             "Brand_Mentioned",
+//             "Sentiment",
+//             "Contextual_Authority",
+//             "Competitors_Mentioned",
+//             "Citation_Detected",
+//             "Recommendation_Priority",
+//             "Summary_of_Framing"
+//           ],
+//           properties: {
+//             Brand_Mentioned: { type: Type.BOOLEAN },
+//             Sentiment: { type: Type.NUMBER },
+//             Contextual_Authority: { type: Type.INTEGER },
+//             Competitors_Mentioned: { type: Type.ARRAY, items: { type: Type.STRING } },
+//             Citation_Detected: { type: Type.BOOLEAN },
+//             Recommendation_Priority: { type: Type.STRING },
+//             Summary_of_Framing: { type: Type.STRING }
+//           }
+//         }
+//       }
+//     });
+
+//     const textOutput = response.text;
+//     if (!textOutput) {
+//       return res.status(500).json({ error: "Empty response from Gemini analysis." });
+//     }
+
+//     const parsed = JSON.parse(textOutput.trim());
+//     return res.json(parsed);
+
+//   } catch (error: any) {
+//     console.error("Analysis Error:", error);
+//     return res.status(500).json({ error: error.message || "An error occurred during analysis." });
+//   }
+// });
+
+// // Configure Vite or Static Files
+// async function startServer() {
+//   if (process.env.NODE_ENV !== "production") {
+//     const vite = await createViteServer({
+//       server: { middlewareMode: true },
+//       appType: "spa",
+//     });
+//     app.use(vite.middlewares);
+//   } else {
+//     const distPath = path.join(process.cwd(), "dist");
+//     app.use(express.static(distPath));
+//     app.get("*", (req, res) => {
+//       res.sendFile(path.join(distPath, "index.html"));
+//     });
+//   }
+
+//   app.listen(PORT, "0.0.0.0", () => {
+//     console.log(`Server running on port ${PORT}`);
+//   });
+// }
+
+// startServer();
+
+
 import express from "express";
 import path from "path";
 import { createServer as createViteServer } from "vite";
-import { GoogleGenAI, Type } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
@@ -11,114 +137,77 @@ app.use(express.json({ limit: "5mb" }));
 
 const PORT = 3000;
 
-// Lazy initialization of Gemini API
 let aiClient: GoogleGenAI | null = null;
 function getGeminiClient(): GoogleGenAI {
   if (!aiClient) {
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("GEMINI_API_KEY environment variable is required.");
-    }
-    aiClient = new GoogleGenAI({
-      apiKey,
-      httpOptions: {
-        headers: {
-          'User-Agent': 'aistudio-build',
-        }
-      }
-    });
+    if (!apiKey) throw new Error("GEMINI_API_KEY is required.");
+    aiClient = new GoogleGenAI({ apiKey });
   }
   return aiClient;
 }
 
-// API Routes
 app.post("/api/analyze", async (req, res) => {
   try {
     const { brand, query, aiResponseText } = req.body;
 
     if (!brand || !query || !aiResponseText) {
-      return res.status(400).json({ error: "Missing required fields: brand, query, or aiResponseText." });
+      return res.status(400).json({ error: "Missing required fields." });
     }
 
     const ai = getGeminiClient();
 
-    const promptObj = `You are an expert Digital Intelligence Analyst specializing in Generative Engine Optimization (GEO). 
-    Your task is to analyze the following AI-generated search response and evaluate the presence and positioning of a target brand.
+    const promptObj = `You are an expert Digital Intelligence Analyst specializing in GEO.
+    Analyze the following AI response for the brand "${brand.trim()}" regarding the query "${query.trim()}".
+    
+    AI Response:
+    """${aiResponseText.trim()}"""
 
-    Target Brand: "${brand.trim()}"
-    Original User Query: "${query.trim()}"
-    AI-Generated Response Text:
-    """
-    ${aiResponseText.trim()}
-    """
-
-    Instructions: Analyze visibility, sentiment, authority, competitors, and framing. 
-    Use the Google Search tool provided to ground your analysis if necessary.`;
+    Output your analysis STRICTLY as a single JSON object. Do not include markdown formatting, code blocks, or explanations. Use this schema:
+    {
+      "Brand_Mentioned": boolean,
+      "Sentiment": number,
+      "Contextual_Authority": number,
+      "Competitors_Mentioned": string[],
+      "Citation_Detected": boolean,
+      "Recommendation_Priority": string,
+      "Summary_of_Framing": string
+    }`;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-1.5-flash",
       contents: promptObj,
       config: {
         tools: [{ googleSearch: {} }],
-        systemInstruction: "You are an objective expert GEO analyst. Adhere strictly to the JSON schema provided.",
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          required: [
-            "Brand_Mentioned",
-            "Sentiment",
-            "Contextual_Authority",
-            "Competitors_Mentioned",
-            "Citation_Detected",
-            "Recommendation_Priority",
-            "Summary_of_Framing"
-          ],
-          properties: {
-            Brand_Mentioned: { type: Type.BOOLEAN },
-            Sentiment: { type: Type.NUMBER },
-            Contextual_Authority: { type: Type.INTEGER },
-            Competitors_Mentioned: { type: Type.ARRAY, items: { type: Type.STRING } },
-            Citation_Detected: { type: Type.BOOLEAN },
-            Recommendation_Priority: { type: Type.STRING },
-            Summary_of_Framing: { type: Type.STRING }
-          }
-        }
+        systemInstruction: "You are an objective expert GEO analyst. Output only valid JSON."
       }
     });
 
     const textOutput = response.text;
-    if (!textOutput) {
-      return res.status(500).json({ error: "Empty response from Gemini analysis." });
-    }
+    if (!textOutput) throw new Error("Empty response from AI.");
 
-    const parsed = JSON.parse(textOutput.trim());
+    // Clean markdown code blocks if the model accidentally includes them
+    const cleanJson = textOutput.replace(/```json/g, "").replace(/```/g, "").trim();
+    const parsed = JSON.parse(cleanJson);
+    
     return res.json(parsed);
 
   } catch (error: any) {
     console.error("Analysis Error:", error);
-    return res.status(500).json({ error: error.message || "An error occurred during analysis." });
+    return res.status(500).json({ error: error.message || "An error occurred." });
   }
 });
 
-// Configure Vite or Static Files
 async function startServer() {
   if (process.env.NODE_ENV !== "production") {
-    const vite = await createViteServer({
-      server: { middlewareMode: true },
-      appType: "spa",
-    });
+    const vite = await createViteServer({ server: { middlewareMode: true }, appType: "spa" });
     app.use(vite.middlewares);
   } else {
     const distPath = path.join(process.cwd(), "dist");
     app.use(express.static(distPath));
-    app.get("*", (req, res) => {
-      res.sendFile(path.join(distPath, "index.html"));
-    });
+    app.get("*", (req, res) => res.sendFile(path.join(distPath, "index.html")));
   }
-
-  app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+  app.listen(PORT, "0.0.0.0", () => console.log(`Server running on port ${PORT}`));
 }
 
 startServer();
