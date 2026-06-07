@@ -1666,10 +1666,6 @@ export default function App() {
 
         {activeTab === "audit" && (
           <div className="col-span-12 -mx-4 md:-mx-6 -my-6">
-                <CaptureUpsideBanner
-      visitsGain={2500}
-    />
-
             <BrandAudit />
           </div>
         )}
