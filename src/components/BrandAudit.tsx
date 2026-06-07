@@ -329,34 +329,7 @@ export default function BrandAudit() {
               <TrendingUp className="w-4 h-4 text-indigo-400" />
               <span className="text-[10px] uppercase tracking-widest text-indigo-400 font-bold">Traffic Opportunity</span>
             </div>
-            {audit?.trafficOpportunity?.additionalVisitsPerMonth > 0 && (
-  <div className="w-full border border-violet-800/30 bg-gradient-to-r from-violet-900/20 via-gray-900 to-violet-900/20 rounded-2xl px-5 py-3.5 flex items-center justify-between gap-4 shadow-sm">
-    <div className="flex items-center gap-3 min-w-0">
-      <div className="shrink-0 flex items-center gap-1.5">
-        <TrendingUp className="w-3.5 h-3.5 text-violet-400" />
-        <span className="text-[10px] font-extrabold uppercase tracking-widest text-violet-400">
-          Capture the Upside
-        </span>
-      </div>
-
-      <div className="hidden sm:block w-px h-4 bg-violet-800/40" />
-
-      <p className="text-sm font-medium text-gray-300 truncate">
-        Want to actually capture these{" "}
-        <span className="font-black text-violet-400">
-          +{audit.trafficOpportunity.additionalVisitsPerMonth.toLocaleString()} visits/mo
-        </span>
-        ?
-      </p>
-    </div>
-
-    <button
-      className="shrink-0 px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl text-sm font-bold text-white transition-all"
-    >
-      Activate GEO Ranker →
-    </button>
-  </div>
-)}
+           
             <div className="flex items-end gap-4 mb-4">
               <div>
                 <div className="text-5xl font-black text-white">
@@ -390,6 +363,35 @@ export default function BrandAudit() {
               </span>
             </div>
           </div>
+
+           {audit?.trafficOpportunity?.additionalVisitsPerMonth > 0 && (
+  <div className="w-full border border-violet-800/30 bg-gradient-to-r from-violet-900/20 via-gray-900 to-violet-900/20 rounded-2xl px-5 py-3.5 flex items-center justify-between gap-4 shadow-sm">
+    <div className="flex items-center gap-3 min-w-0">
+      <div className="shrink-0 flex items-center gap-1.5">
+        <TrendingUp className="w-3.5 h-3.5 text-violet-400" />
+        <span className="text-[10px] font-extrabold uppercase tracking-widest text-violet-400">
+          Capture the Upside
+        </span>
+      </div>
+
+      <div className="hidden sm:block w-px h-4 bg-violet-800/40" />
+
+      <p className="text-sm font-medium text-gray-300 truncate">
+        Want to actually capture these{" "}
+        <span className="font-black text-violet-400">
+          +{audit.trafficOpportunity.additionalVisitsPerMonth.toLocaleString()} visits/mo
+        </span>
+        ?
+      </p>
+    </div>
+
+    <button
+      className="shrink-0 px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 rounded-xl text-sm font-bold text-white transition-all"
+    >
+      Activate GEO Ranker →
+    </button>
+  </div>
+)}
 
           {/* Competitors Beating You */}
           <div className="bg-gray-900 border border-gray-700/50 rounded-2xl p-6">
