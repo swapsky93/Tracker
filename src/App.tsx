@@ -3,11 +3,12 @@
 //   Search, Sparkles, Cpu, History, BarChart3, Trash2, 
 //   HelpCircle, Send, CheckCircle2, XCircle, ExternalLink, 
 //   FileText, AlertTriangle, RefreshCw, Copy, Plus, 
-//   Award, Target, TrendingUp, Info, BookOpen, Layers
+//   Award, Target, TrendingUp, Info, BookOpen, Layers, Zap
 // } from "lucide-react";
 // import { SAMPLE_TEMPLATES } from "./templates";
 // import { GeoRecord, GeoAnalysisResult, TemplateResponse } from "./types";
 // import { SentimentGauge } from "./components/SentimentGauge";
+// import BrandAudit from "./components/BrandAudit";
 // import { AuthorityMeter } from "./components/AuthorityMeter";
 
 // const DEFAULT_RECORDS: GeoRecord[] = [
@@ -90,10 +91,6 @@
 // ];
 
 // export default function App() {
-//   // const [brand, setBrand] = useState("HubSpot");
-//   // const [query, setQuery] = useState("What is the best CRM for scaling SaaS startups?");
-//   // const [engine, setEngine] = useState("Google Search Overview");
-//   // const [aiResponseText, setAiResponseText] = useState(SAMPLE_TEMPLATES[0].aiResponseText);
 //   const [brand, setBrand] = useState("");
 //   const [query, setQuery] = useState("");
 //   const [engine, setEngine] = useState("Google Search Overview");
@@ -102,31 +99,11 @@
 //   const [records, setRecords] = useState<GeoRecord[]>([]);
 //   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
 //   const [isAnalyzing, setIsAnalyzing] = useState(false);
-//   const [isFetching, setIsFetching] = useState(false); // NEW
+//   const [isFetching, setIsFetching] = useState(false);
 //   const [analysisError, setAnalysisError] = useState<string | null>(null);
-//   const [activeTab, setActiveTab] = useState<"dashboard" | "history" | "about">("dashboard");
+//   const [activeTab, setActiveTab] = useState<"dashboard" | "history" | "about" | "audit">("dashboard");
 //   const [copiedId, setCopiedId] = useState<string | null>(null);
 //   const [showNotification, setShowNotification] = useState<string | null>(null);
-
-//   // useEffect(() => {
-//   //   try {
-//   //     const stored = localStorage.getItem("geo_analyzer_records");
-//   //     if (stored) {
-//   //       const parsed = JSON.parse(stored);
-//   //       if (parsed && parsed.length > 0) {
-//   //         setRecords(parsed);
-//   //         setSelectedRecordId(parsed[0].id);
-//   //         return;
-//   //       }
-//   //     }
-//   //   } catch (e) {
-//   //     console.warn("Could not load from localStorage", e);
-//   //   }
-//   //   setRecords(DEFAULT_RECORDS);
-//   //   setSelectedRecordId(DEFAULT_RECORDS[0].id);
-//   //   localStorage.setItem("geo_analyzer_records", JSON.stringify(DEFAULT_RECORDS));
-//   // }, []);
-
 
 //   useEffect(() => {
 //     // Fresh start — clear all old records on load
@@ -173,7 +150,6 @@
 //     setAnalysisError(null);
 //   };
 
-//   // NEW: Standalone fetch button handler
 //   const fetchAIResponseOnly = async () => {
 //     if (!query.trim()) {
 //       setAnalysisError("Enter a query first before fetching AI response.");
@@ -198,7 +174,6 @@
 //     }
 //   };
 
-//   // UPDATED: aiResponseText now optional — auto-fetched by backend if empty
 //   const handleAnalyze = async (e: React.FormEvent) => {
 //     e.preventDefault();
 //     if (!brand.trim() || !query.trim()) {
@@ -225,7 +200,6 @@
 
 //       const result = await response.json();
 
-//       // Auto-populate textarea if backend fetched the response
 //       if (result.autoFetchedAiResponse && !aiResponseText.trim()) {
 //         setAiResponseText(result.autoFetchedAiResponse);
 //       }
@@ -270,13 +244,6 @@
 //     triggerNotification("Record deleted.");
 //   };
 
-//   // const handleResetDefaults = () => {
-//   //   if (confirm("Reset setup to clear all current entries and restore premium defaults?")) {
-//   //     saveRecordsCustom(DEFAULT_RECORDS);
-//   //     setSelectedRecordId(DEFAULT_RECORDS[0].id);
-//   //     triggerNotification("Workspace data has been reset.");
-//   //   }
-//   // };
 //   const handleResetDefaults = () => {
 //     if (confirm("Clear all audit records and start fresh?")) {
 //       saveRecordsCustom([]);
@@ -288,67 +255,7 @@
 //     }
 //   };
 
-// //   const metrics = useMemo(() => {
-// //     const total = records.length;
-// //     if (total === 0) {
-// //       return { total: 0, mentionRate: 0, avgSentiment: 0, avgAuthority: 0, topCompetitors: [] };
-// //     }
-
-// //     const mentionedCount = records.filter(r => r.result.Brand_Mentioned).length;
-// //     const mentionRate = Math.round((mentionedCount / total) * 100);
-
-// //     const sentimentRecords = records.filter(r => r.result.Sentiment !== null);
-// //     const avgSentiment = sentimentRecords.length > 0 
-// //       ? Number((sentimentRecords.reduce((acc, r) => acc + (r.result.Sentiment || 0), 0) / sentimentRecords.length).toFixed(2))
-// //       : 0;
-
-// //     const authorityRecords = records.filter(r => r.result.Contextual_Authority !== null);
-// //     const avgAuthority = authorityRecords.length > 0
-// //       ? Number((authorityRecords.reduce((acc, r) => acc + (r.result.Contextual_Authority || 0), 0) / authorityRecords.length).toFixed(1))
-// //       : 0;
-
-// //     // const competitorMap: Record<string, number> = {};
-// //     // records.forEach(r => {
-// //     //   r.result.Competitors_Mentioned.forEach(comp => {
-// //     //     const norm = comp.trim();
-// //     //     if (norm) competitorMap[norm] = (competitorMap[norm] || 0) + 1;
-// //     //   });
-// //     // });
-
-// //     // const topCompetitors = Object.entries(competitorMap)
-// //     //   .map(([name, count]) => ({ name, count }))
-// //     //   .sort((a, b) => b.count - a.count)
-// //     //   .slice(0, 5);
-
-// //     const competitorMap: Record<string, number> = {};
-
-// // // Only use competitors from the CURRENT record, not all records
-// // const sourceRecords = currentRecord ? [currentRecord] : records.slice(0, 1);
-// // sourceRecords.forEach(r => {
-// //   r.result.Competitors_Mentioned.forEach(comp => {
-// //     const norm = comp.trim();
-// //     if (norm) competitorMap[norm] = (competitorMap[norm] || 0) + 1;
-// //   });
-// // });
-
-// // const topCompetitors = Object.entries(competitorMap)
-// //   .map(([name, count]) => ({ name, count }))
-// //   .sort((a, b) => b.count - a.count)
-// //   .slice(0, 5);
-
-// //     return { total, mentionRate, avgSentiment, avgAuthority, topCompetitors };
-// //   }, [records]);
-
 //   const metrics = useMemo(() => {
-//     // Filter ALL metrics to only the current brand being viewed
-//     // const currentBrand = currentRecord?.input.brand?.toLowerCase().trim();
-    
-//     // const brandRecords = currentBrand
-//     //   ? records.filter(r => r.input.brand.toLowerCase().trim() === currentBrand)
-//     //   : records;
-
-//     // Use the brand being TYPED in the form, not just the current record
-//     // This way switching brand instantly updates the banner
 //     const activeBrand = (brand || currentRecord?.input.brand || "").toLowerCase().trim();
 
 //     const brandRecords = activeBrand
@@ -357,27 +264,22 @@
 
 //     const total = brandRecords.length;
 //     if (total === 0) {
-//       // return { total: 0, mentionRate: 0, avgSentiment: 0, avgAuthority: 0, topCompetitors: [], currentBrand: currentBrand || "" };
 //       return { total: 0, mentionRate: 0, avgSentiment: 0, avgAuthority: 0, topCompetitors: [], currentBrand: activeBrand };
 //     }
 
-//     // Mention rate — only for current brand
 //     const mentionedCount = brandRecords.filter(r => r.result.Brand_Mentioned).length;
 //     const mentionRate = Math.round((mentionedCount / total) * 100);
 
-//     // Sentiment — only from records where brand WAS mentioned
 //     const sentimentRecords = brandRecords.filter(r => r.result.Brand_Mentioned && r.result.Sentiment !== null);
 //     const avgSentiment = sentimentRecords.length > 0
 //       ? Number((sentimentRecords.reduce((acc, r) => acc + (r.result.Sentiment || 0), 0) / sentimentRecords.length).toFixed(2))
 //       : 0;
 
-//     // Authority — only from records where brand WAS mentioned
 //     const authorityRecords = brandRecords.filter(r => r.result.Brand_Mentioned && r.result.Contextual_Authority !== null);
 //     const avgAuthority = authorityRecords.length > 0
 //       ? Number((authorityRecords.reduce((acc, r) => acc + (r.result.Contextual_Authority || 0), 0) / authorityRecords.length).toFixed(1))
 //       : 0;
 
-//     // Competitors — only from current record being viewed
 //     const competitorMap: Record<string, number> = {};
 //     if (currentRecord) {
 //       currentRecord.result.Competitors_Mentioned.forEach(comp => {
@@ -391,10 +293,8 @@
 //       .sort((a, b) => b.count - a.count)
 //       .slice(0, 5);
 
-//     // return { total, mentionRate, avgSentiment, avgAuthority, topCompetitors, currentBrand: currentBrand || "" };
 //     return { total, mentionRate, avgSentiment, avgAuthority, topCompetitors, currentBrand: activeBrand };
-//   // }, [records, currentRecord]);
-//     }, [records, currentRecord, brand]);
+//   }, [records, currentRecord, brand]);
 
 //   return (
 //     <div className="min-h-screen bg-[#F9FAFB] flex flex-col text-gray-800" id="geo-app-root">
@@ -433,6 +333,9 @@
 //             <button onClick={() => setActiveTab("about")} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeTab === "about" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"}`} id="tab-about-btn">
 //               <Info className="w-3.5 h-3.5" /> GEO Methodology
 //             </button>
+//             <button onClick={() => setActiveTab("audit")} className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all ${activeTab === "audit" ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 hover:text-gray-900"}`} id="tab-audit-btn">
+//               <Zap className="w-3.5 h-3.5" /> Brand Audit
+//             </button>
 //           </div>
 //         </div>
 //       </header>
@@ -443,7 +346,6 @@
 //             <div className="p-4 rounded-xl bg-gray-800/40 border border-gray-800 flex flex-col justify-between">
 //               <span className="text-gray-400 text-xs font-medium uppercase tracking-wider flex items-center gap-1.5"><Layers className="w-3.5 h-3.5 text-gray-500" /> Total Audits</span>
 //               <span className="text-2xl font-black text-white mt-1.5 font-mono">{metrics.total}</span>
-//               {/* <span className="text-[10px] text-gray-500 mt-1">Cross-platform responses</span> */}
 //               <span className="text-[10px] text-gray-500 mt-1">{metrics.currentBrand ? `Audits for "${metrics.currentBrand}"` : "Cross-platform responses"}</span>
 //             </div>
 //             <div className="p-4 rounded-xl bg-gray-800/40 border border-gray-800 flex flex-col justify-between">
@@ -553,7 +455,6 @@
 //                   <input type="text" required value={query} onChange={(e) => setQuery(e.target.value)} placeholder="e.g. What is the best CRM for scaling SaaS startups?" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-indigo-500 focus:bg-white outline-none transition-all" id="input-user-query" />
 //                 </div>
 
-//                 {/* UPDATED: AI Response textarea with Auto-Fetch button */}
 //                 <div>
 //                   <div className="flex items-center justify-between mb-1">
 //                     <label className="text-xs font-semibold text-gray-600">
@@ -912,6 +813,12 @@
 //           </div>
 //         )}
 
+//         {activeTab === "audit" && (
+//           <div className="col-span-12 -mx-4 md:-mx-6 -my-6">
+//             <BrandAudit />
+//           </div>
+//         )}
+
 //       </main>
 
 //       <footer className="border-t border-gray-200 bg-white py-4 px-6 text-center text-[10px] text-gray-400 mt-auto" id="app-footer">
@@ -937,6 +844,7 @@ import { GeoRecord, GeoAnalysisResult, TemplateResponse } from "./types";
 import { SentimentGauge } from "./components/SentimentGauge";
 import BrandAudit from "./components/BrandAudit";
 import { AuthorityMeter } from "./components/AuthorityMeter";
+import CaptureUpsideBanner from "./components/CaptureUpsideBanner";
 
 const DEFAULT_RECORDS: GeoRecord[] = [
   {
@@ -1017,6 +925,14 @@ const DEFAULT_RECORDS: GeoRecord[] = [
   }
 ];
 
+// ─── Utility: estimate visits gain from authority + sentiment ─────────────────
+function estimateVisitsGain(record: GeoRecord | null): number {
+  if (!record || !record.result.Brand_Mentioned) return 0;
+  const authority = record.result.Contextual_Authority || 1;
+  const sentimentBoost = record.result.Sentiment ? Math.max(0, record.result.Sentiment) : 0;
+  return Math.round((authority * 180) + (sentimentBoost * 250));
+}
+
 export default function App() {
   const [brand, setBrand] = useState("");
   const [query, setQuery] = useState("");
@@ -1033,7 +949,6 @@ export default function App() {
   const [showNotification, setShowNotification] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fresh start — clear all old records on load
     localStorage.removeItem("geo_analyzer_records");
     setRecords([]);
     setSelectedRecordId(null);
@@ -1051,6 +966,9 @@ export default function App() {
   const currentRecord = useMemo(() => {
     return records.find(r => r.id === selectedRecordId) || null;
   }, [records, selectedRecordId]);
+
+  // Computed visits gain for the banner
+  const visitsGain = useMemo(() => estimateVisitsGain(currentRecord), [currentRecord]);
 
   const handleApplyTemplate = (id: string) => {
     const template = SAMPLE_TEMPLATES.find(t => t.id === id);
@@ -1186,8 +1104,8 @@ export default function App() {
     const activeBrand = (brand || currentRecord?.input.brand || "").toLowerCase().trim();
 
     const brandRecords = activeBrand
-    ? records.filter(r => r.input.brand.toLowerCase().trim() === activeBrand)
-    : [];
+      ? records.filter(r => r.input.brand.toLowerCase().trim() === activeBrand)
+      : [];
 
     const total = brandRecords.length;
     if (total === 0) {
@@ -1500,6 +1418,12 @@ export default function App() {
                     <div className="md:col-span-4"><SentimentGauge score={currentRecord.result.Sentiment} /></div>
                     <div className="md:col-span-4"><AuthorityMeter score={currentRecord.result.Contextual_Authority} /></div>
                   </div>
+
+                  {/* ── Capture the Upside Banner ── */}
+                  <CaptureUpsideBanner
+                    visitsGain={visitsGain > 0 ? visitsGain : 833}
+                    brandName={currentRecord.input.brand}
+                  />
 
                   <div className="bg-gradient-to-r from-gray-900 to-indigo-950 text-white rounded-2xl p-5 border border-indigo-950 shadow-md">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-indigo-300 bg-indigo-900/50 border border-indigo-800/60 px-2 py-0.5 rounded">Executive Narrative Framing Summary</span>
