@@ -392,13 +392,6 @@ export default function BrandAudit() {
     </button>
   </div>
 )}
-                {open && (
-        <StripeCheckoutModal
-          onClose={() => setOpen(false)}
-          visitsGain={visitsGain}
-          brandName={brandName}
-        />
-      )}
           
 
           {/* Competitors Beating You */}
