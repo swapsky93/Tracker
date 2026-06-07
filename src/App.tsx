@@ -90,10 +90,14 @@ const DEFAULT_RECORDS: GeoRecord[] = [
 ];
 
 export default function App() {
-  const [brand, setBrand] = useState("HubSpot");
-  const [query, setQuery] = useState("What is the best CRM for scaling SaaS startups?");
+  // const [brand, setBrand] = useState("HubSpot");
+  // const [query, setQuery] = useState("What is the best CRM for scaling SaaS startups?");
+  // const [engine, setEngine] = useState("Google Search Overview");
+  // const [aiResponseText, setAiResponseText] = useState(SAMPLE_TEMPLATES[0].aiResponseText);
+  const [brand, setBrand] = useState("");
+  const [query, setQuery] = useState("");
   const [engine, setEngine] = useState("Google Search Overview");
-  const [aiResponseText, setAiResponseText] = useState(SAMPLE_TEMPLATES[0].aiResponseText);
+  const [aiResponseText, setAiResponseText] = useState("");
 
   const [records, setRecords] = useState<GeoRecord[]>([]);
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
@@ -104,23 +108,31 @@ export default function App() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [showNotification, setShowNotification] = useState<string | null>(null);
 
+  // useEffect(() => {
+  //   try {
+  //     const stored = localStorage.getItem("geo_analyzer_records");
+  //     if (stored) {
+  //       const parsed = JSON.parse(stored);
+  //       if (parsed && parsed.length > 0) {
+  //         setRecords(parsed);
+  //         setSelectedRecordId(parsed[0].id);
+  //         return;
+  //       }
+  //     }
+  //   } catch (e) {
+  //     console.warn("Could not load from localStorage", e);
+  //   }
+  //   setRecords(DEFAULT_RECORDS);
+  //   setSelectedRecordId(DEFAULT_RECORDS[0].id);
+  //   localStorage.setItem("geo_analyzer_records", JSON.stringify(DEFAULT_RECORDS));
+  // }, []);
+
+
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem("geo_analyzer_records");
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed && parsed.length > 0) {
-          setRecords(parsed);
-          setSelectedRecordId(parsed[0].id);
-          return;
-        }
-      }
-    } catch (e) {
-      console.warn("Could not load from localStorage", e);
-    }
-    setRecords(DEFAULT_RECORDS);
-    setSelectedRecordId(DEFAULT_RECORDS[0].id);
-    localStorage.setItem("geo_analyzer_records", JSON.stringify(DEFAULT_RECORDS));
+    // Fresh start — clear all old records on load
+    localStorage.removeItem("geo_analyzer_records");
+    setRecords([]);
+    setSelectedRecordId(null);
   }, []);
 
   const saveRecordsCustom = (newRecords: GeoRecord[]) => {
@@ -258,11 +270,21 @@ export default function App() {
     triggerNotification("Record deleted.");
   };
 
+  // const handleResetDefaults = () => {
+  //   if (confirm("Reset setup to clear all current entries and restore premium defaults?")) {
+  //     saveRecordsCustom(DEFAULT_RECORDS);
+  //     setSelectedRecordId(DEFAULT_RECORDS[0].id);
+  //     triggerNotification("Workspace data has been reset.");
+  //   }
+  // };
   const handleResetDefaults = () => {
-    if (confirm("Reset setup to clear all current entries and restore premium defaults?")) {
-      saveRecordsCustom(DEFAULT_RECORDS);
-      setSelectedRecordId(DEFAULT_RECORDS[0].id);
-      triggerNotification("Workspace data has been reset.");
+    if (confirm("Clear all audit records and start fresh?")) {
+      saveRecordsCustom([]);
+      setSelectedRecordId(null);
+      setBrand("");
+      setQuery("");
+      setAiResponseText("");
+      triggerNotification("Workspace cleared. Start a fresh audit.");
     }
   };
 
@@ -319,15 +341,24 @@ export default function App() {
 
   const metrics = useMemo(() => {
     // Filter ALL metrics to only the current brand being viewed
-    const currentBrand = currentRecord?.input.brand?.toLowerCase().trim();
+    // const currentBrand = currentRecord?.input.brand?.toLowerCase().trim();
     
-    const brandRecords = currentBrand
-      ? records.filter(r => r.input.brand.toLowerCase().trim() === currentBrand)
-      : records;
+    // const brandRecords = currentBrand
+    //   ? records.filter(r => r.input.brand.toLowerCase().trim() === currentBrand)
+    //   : records;
+
+    // Use the brand being TYPED in the form, not just the current record
+    // This way switching brand instantly updates the banner
+    const activeBrand = (brand || currentRecord?.input.brand || "").toLowerCase().trim();
+
+    const brandRecords = activeBrand
+    ? records.filter(r => r.input.brand.toLowerCase().trim() === activeBrand)
+    : [];
 
     const total = brandRecords.length;
     if (total === 0) {
-      return { total: 0, mentionRate: 0, avgSentiment: 0, avgAuthority: 0, topCompetitors: [], currentBrand: currentBrand || "" };
+      // return { total: 0, mentionRate: 0, avgSentiment: 0, avgAuthority: 0, topCompetitors: [], currentBrand: currentBrand || "" };
+      return { total: 0, mentionRate: 0, avgSentiment: 0, avgAuthority: 0, topCompetitors: [], currentBrand: activeBrand };
     }
 
     // Mention rate — only for current brand
@@ -360,8 +391,10 @@ export default function App() {
       .sort((a, b) => b.count - a.count)
       .slice(0, 5);
 
-    return { total, mentionRate, avgSentiment, avgAuthority, topCompetitors, currentBrand: currentBrand || "" };
-  }, [records, currentRecord]);
+    // return { total, mentionRate, avgSentiment, avgAuthority, topCompetitors, currentBrand: currentBrand || "" };
+    return { total, mentionRate, avgSentiment, avgAuthority, topCompetitors, currentBrand: activeBrand };
+  // }, [records, currentRecord]);
+    }, [records, currentRecord, brand]);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col text-gray-800" id="geo-app-root">
