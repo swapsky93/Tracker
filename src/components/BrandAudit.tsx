@@ -391,7 +391,14 @@ export default function BrandAudit() {
       Activate GEO Ranker →
     </button>
   </div>
+          open && (
+        <StripeCheckoutModal
+          onClose={() => setOpen(false)}
+          visitsGain={visitsGain}
+          brandName={brandName}
+        />
 )}
+          
 
           {/* Competitors Beating You */}
           <div className="bg-gray-900 border border-gray-700/50 rounded-2xl p-6">
