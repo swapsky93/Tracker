@@ -266,56 +266,102 @@ export default function App() {
     }
   };
 
+//   const metrics = useMemo(() => {
+//     const total = records.length;
+//     if (total === 0) {
+//       return { total: 0, mentionRate: 0, avgSentiment: 0, avgAuthority: 0, topCompetitors: [] };
+//     }
+
+//     const mentionedCount = records.filter(r => r.result.Brand_Mentioned).length;
+//     const mentionRate = Math.round((mentionedCount / total) * 100);
+
+//     const sentimentRecords = records.filter(r => r.result.Sentiment !== null);
+//     const avgSentiment = sentimentRecords.length > 0 
+//       ? Number((sentimentRecords.reduce((acc, r) => acc + (r.result.Sentiment || 0), 0) / sentimentRecords.length).toFixed(2))
+//       : 0;
+
+//     const authorityRecords = records.filter(r => r.result.Contextual_Authority !== null);
+//     const avgAuthority = authorityRecords.length > 0
+//       ? Number((authorityRecords.reduce((acc, r) => acc + (r.result.Contextual_Authority || 0), 0) / authorityRecords.length).toFixed(1))
+//       : 0;
+
+//     // const competitorMap: Record<string, number> = {};
+//     // records.forEach(r => {
+//     //   r.result.Competitors_Mentioned.forEach(comp => {
+//     //     const norm = comp.trim();
+//     //     if (norm) competitorMap[norm] = (competitorMap[norm] || 0) + 1;
+//     //   });
+//     // });
+
+//     // const topCompetitors = Object.entries(competitorMap)
+//     //   .map(([name, count]) => ({ name, count }))
+//     //   .sort((a, b) => b.count - a.count)
+//     //   .slice(0, 5);
+
+//     const competitorMap: Record<string, number> = {};
+
+// // Only use competitors from the CURRENT record, not all records
+// const sourceRecords = currentRecord ? [currentRecord] : records.slice(0, 1);
+// sourceRecords.forEach(r => {
+//   r.result.Competitors_Mentioned.forEach(comp => {
+//     const norm = comp.trim();
+//     if (norm) competitorMap[norm] = (competitorMap[norm] || 0) + 1;
+//   });
+// });
+
+// const topCompetitors = Object.entries(competitorMap)
+//   .map(([name, count]) => ({ name, count }))
+//   .sort((a, b) => b.count - a.count)
+//   .slice(0, 5);
+
+//     return { total, mentionRate, avgSentiment, avgAuthority, topCompetitors };
+//   }, [records]);
+
   const metrics = useMemo(() => {
-    const total = records.length;
+    // Filter ALL metrics to only the current brand being viewed
+    const currentBrand = currentRecord?.input.brand?.toLowerCase().trim();
+    
+    const brandRecords = currentBrand
+      ? records.filter(r => r.input.brand.toLowerCase().trim() === currentBrand)
+      : records;
+
+    const total = brandRecords.length;
     if (total === 0) {
-      return { total: 0, mentionRate: 0, avgSentiment: 0, avgAuthority: 0, topCompetitors: [] };
+      return { total: 0, mentionRate: 0, avgSentiment: 0, avgAuthority: 0, topCompetitors: [], currentBrand: currentBrand || "" };
     }
 
-    const mentionedCount = records.filter(r => r.result.Brand_Mentioned).length;
+    // Mention rate — only for current brand
+    const mentionedCount = brandRecords.filter(r => r.result.Brand_Mentioned).length;
     const mentionRate = Math.round((mentionedCount / total) * 100);
 
-    const sentimentRecords = records.filter(r => r.result.Sentiment !== null);
-    const avgSentiment = sentimentRecords.length > 0 
+    // Sentiment — only from records where brand WAS mentioned
+    const sentimentRecords = brandRecords.filter(r => r.result.Brand_Mentioned && r.result.Sentiment !== null);
+    const avgSentiment = sentimentRecords.length > 0
       ? Number((sentimentRecords.reduce((acc, r) => acc + (r.result.Sentiment || 0), 0) / sentimentRecords.length).toFixed(2))
       : 0;
 
-    const authorityRecords = records.filter(r => r.result.Contextual_Authority !== null);
+    // Authority — only from records where brand WAS mentioned
+    const authorityRecords = brandRecords.filter(r => r.result.Brand_Mentioned && r.result.Contextual_Authority !== null);
     const avgAuthority = authorityRecords.length > 0
       ? Number((authorityRecords.reduce((acc, r) => acc + (r.result.Contextual_Authority || 0), 0) / authorityRecords.length).toFixed(1))
       : 0;
 
-    // const competitorMap: Record<string, number> = {};
-    // records.forEach(r => {
-    //   r.result.Competitors_Mentioned.forEach(comp => {
-    //     const norm = comp.trim();
-    //     if (norm) competitorMap[norm] = (competitorMap[norm] || 0) + 1;
-    //   });
-    // });
-
-    // const topCompetitors = Object.entries(competitorMap)
-    //   .map(([name, count]) => ({ name, count }))
-    //   .sort((a, b) => b.count - a.count)
-    //   .slice(0, 5);
-
+    // Competitors — only from current record being viewed
     const competitorMap: Record<string, number> = {};
+    if (currentRecord) {
+      currentRecord.result.Competitors_Mentioned.forEach(comp => {
+        const norm = comp.trim();
+        if (norm) competitorMap[norm] = (competitorMap[norm] || 0) + 1;
+      });
+    }
 
-// Only use competitors from the CURRENT record, not all records
-const sourceRecords = currentRecord ? [currentRecord] : records.slice(0, 1);
-sourceRecords.forEach(r => {
-  r.result.Competitors_Mentioned.forEach(comp => {
-    const norm = comp.trim();
-    if (norm) competitorMap[norm] = (competitorMap[norm] || 0) + 1;
-  });
-});
+    const topCompetitors = Object.entries(competitorMap)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
 
-const topCompetitors = Object.entries(competitorMap)
-  .map(([name, count]) => ({ name, count }))
-  .sort((a, b) => b.count - a.count)
-  .slice(0, 5);
-
-    return { total, mentionRate, avgSentiment, avgAuthority, topCompetitors };
-  }, [records]);
+    return { total, mentionRate, avgSentiment, avgAuthority, topCompetitors, currentBrand: currentBrand || "" };
+  }, [records, currentRecord]);
 
   return (
     <div className="min-h-screen bg-[#F9FAFB] flex flex-col text-gray-800" id="geo-app-root">
@@ -364,7 +410,8 @@ const topCompetitors = Object.entries(competitorMap)
             <div className="p-4 rounded-xl bg-gray-800/40 border border-gray-800 flex flex-col justify-between">
               <span className="text-gray-400 text-xs font-medium uppercase tracking-wider flex items-center gap-1.5"><Layers className="w-3.5 h-3.5 text-gray-500" /> Total Audits</span>
               <span className="text-2xl font-black text-white mt-1.5 font-mono">{metrics.total}</span>
-              <span className="text-[10px] text-gray-500 mt-1">Cross-platform responses</span>
+              {/* <span className="text-[10px] text-gray-500 mt-1">Cross-platform responses</span> */}
+              <span className="text-[10px] text-gray-500 mt-1">{metrics.currentBrand ? `Audits for "${metrics.currentBrand}"` : "Cross-platform responses"}</span>
             </div>
             <div className="p-4 rounded-xl bg-gray-800/40 border border-gray-800 flex flex-col justify-between">
               <span className="text-gray-400 text-xs font-medium uppercase tracking-wider flex items-center gap-1.5"><Target className="w-3.5 h-3.5 text-emerald-505" /> Brand Mention Rate</span>
